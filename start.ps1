@@ -10,9 +10,9 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Docker Desktop is not ready. Start Docker Desktop and wait until the Linux engine is running.'
 }
 if ($Stop) {
-    docker compose down
+    docker compose stop
     if ($LASTEXITCODE -ne 0) { throw 'Unable to stop Minty Code.' }
-    Write-Host 'Minty Code stopped. Your database and workspaces are preserved.'
+    Write-Host 'Minty Code stopped. Containers, database and workspaces are preserved.'
     exit 0
 }
 if (-not (Test-Path -LiteralPath '.env')) {

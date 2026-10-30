@@ -44,7 +44,13 @@ Copy-Item .env.example .env
 .\start.ps1 -Stop
 ```
 
-停止会保留数据库和工作文件。Compose 只将网页端口绑定本机，不暴露数据库端口。
+停止会保留容器、数据库和工作文件，可在 Docker Desktop 再次启动。Compose 只将网页端口绑定本机，不暴露数据库端口。
+
+启动成功后，Docker Desktop 的 **Containers** 中会出现 `minty-code`，展开可见 `frontend`、`backend` 和 `db`。之后可以直接在 Docker Desktop 启动或停止这一组容器。前后端与数据库均通过健康检查后再提供服务。
+
+Docker 中的数据库保存在 `minty-code_postgres-data` 卷，工作文件保存在 `minty-code_agent-data` 卷，可在 **Volumes** 中查看。它们不上传 GitHub。`docker compose down` 保留数据；不要加 `-v`，该参数会删除数据卷。更换已初始化数据库的密码需要先在 PostgreSQL 中修改，单改 `.env` 不会改变已有数据库密码。
+
+从本地开发切换时先运行 `.\start-dev.ps1 -Stop` 释放网页端口。两个模式使用不同数据存储，不会自动互相同步；本机原数据的迁移备份放在 `data/backups/`。
 
 ## 本地开发（不使用 Docker）
 
