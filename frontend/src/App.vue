@@ -56,11 +56,6 @@ const taskProgress = computed(() => tasks.value.length ? Math.round(completedTas
 const tokenCount = computed(() => (run.value?.inputTokens || 0) + (run.value?.outputTokens || 0))
 const statusLabel = computed(() => !connected.value ? '等待连接' : status.value?.configured ? '已就绪' : '待配置模型')
 const dateLabel = new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' }).format(new Date())
-const suggestions = [
-  { icon: 'code', label: '写一点新东西', text: '帮我在工作区创建一个简洁的待办事项网页，支持添加、完成和删除任务。', tint: 'mint' },
-  { icon: 'shield', label: '检查我的代码', text: '请检查当前工作区的代码，找出潜在错误并给出修改建议。先阅读文件，不要直接修改。', tint: 'pink' },
-  { icon: 'book', label: '读懂一个项目', text: '请阅读当前工作区，介绍项目结构、入口文件和主要功能。', tint: 'yellow' },
-]
 const normalizeState = value => String(value || '').toLowerCase()
 const formatCount = n => Number(n || 0).toLocaleString('zh-CN')
 const formatTime = date => date ? new Date(date).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : ''
@@ -215,7 +210,6 @@ async function stop() {
   catch (e) { ElMessage.error(errorMessage(e)) }
   finally { stopping.value = false }
 }
-function useSuggestion(text) { prompt.value = text; composer.value?.focus() }
 function onComposerKey(event) {
   if (event.key === 'Enter' && !event.shiftKey && !event.isComposing && event.keyCode !== 229) { event.preventDefault(); send() }
 }
@@ -306,7 +300,6 @@ onBeforeUnmount(() => { destroyed = true; clearTimeout(pollTimer); chartObserver
         </button>
       </div>
       <div class="sidebar-bottom">
-        <div class="grow-note"><div class="tiny-sprout"><Icon name="leaf" :size="25" /></div><strong>小小一步，也在进步</strong><p>把琐碎交给助手，<br />把心思留给好点子。</p><span class="note-flower">✳</span></div>
         <button class="settings-button" @click="settingsOpen = true"><Icon name="settings" :size="18" /><span>设置与连接</span><span :class="['connection-dot', { online: connected && status?.configured }]"></span></button>
         <div class="personal-profile"><div class="profile-avatar">S<span></span></div><div><strong>我的个人工作室</strong><small>Personal workspace</small></div><span class="local-pill">本地</span></div>
       </div>
@@ -337,11 +330,8 @@ onBeforeUnmount(() => { destroyed = true; clearTimeout(pollTimer); chartObserver
             <div v-if="loadingSession" class="loading-state"><span class="loading-dot"></span>正在打开对话…</div>
             <div v-else-if="!messages.length && !active" class="welcome">
               <div class="welcome-illustration"><img class="welcome-mascot" :src="mascotUrl" alt="薄荷猫娘，你的编程小搭档" width="180" height="180" fetchpriority="high" /></div>
-              <div class="welcome-eyebrow">YOUR LITTLE CODING COMPANION</div>
               <h1>你好呀，今天想创造点什么<span>？</span></h1>
               <p>我是薄荷，你的编程小搭档。<br />从一个小点子开始，我们一起把它变成现实。</p>
-              <div class="suggestion-grid"><button v-for="item in suggestions" :key="item.label" class="suggestion-card" @click="useSuggestion(item.text)"><span :class="['suggestion-icon', item.tint]"><Icon :name="item.icon" :size="19" /></span><strong>{{ item.label }}</strong><span class="suggestion-hint">{{ item.text }}</span><Icon name="chevron" :size="15" /></button></div>
-              <div class="welcome-note"><Icon name="leaf" :size="14" />不急，我们一步一步来。</div>
             </div>
             <div v-else class="message-list">
               <div class="conversation-start"><span></span>灵感从这里开始<span></span></div>
@@ -367,8 +357,7 @@ onBeforeUnmount(() => { destroyed = true; clearTimeout(pollTimer); chartObserver
             <template v-if="sideTab === 'tasks'"><div v-if="tasks.length" class="task-progress"><div><span>一点点，靠近完成</span><strong>{{ taskProgress }}%</strong></div><el-progress :percentage="taskProgress" :show-text="false" :stroke-width="5" color="#85b397" /></div><div v-if="!tasks.length" class="context-empty"><div class="empty-illustration"><Icon name="check" :size="27" /><i></i><i></i></div><strong>给灵感留一点位置</strong><p>薄荷拆解任务后，<br />会在这里记下每一个小步骤。</p></div><div v-for="task in tasks" :key="task.id" class="task-item"><span :class="['task-state', normalizeState(task.status)]"><Icon :name="normalizeState(task.status) === 'completed' ? 'check' : 'circle'" :size="15" /></span><div><strong>{{ task.subject || task.title }}</strong><p v-if="task.description">{{ task.description }}</p><small>{{ stateLabel(task.status) }}</small></div></div></template>
             <template v-else><div v-if="!files.length" class="context-empty"><div class="empty-illustration file-empty"><Icon name="folder" :size="28" /></div><strong>作品还在酝酿中</strong><p>添加已有代码，或让薄荷创建文件，<br />它们会被好好收在这里。</p></div><button v-for="file in files" :key="file.path" class="file-item" @click="openFile(file)"><span class="file-icon"><Icon name="file" :size="19" /></span><span><strong>{{ file.path.split('/').pop() }}</strong><small :title="file.path">{{ file.path }}</small></span><small>{{ bytes(file.size || 0) }}</small></button></template>
           </div>
-          <div class="workspace-info"><div class="info-eyebrow"><span></span> 在自己的小天地里</div><div><Icon name="folder" :size="15" /><span>{{ selectedId ? `会话 ${String(selectedId).slice(0, 8)}` : '尚未创建工作区' }}</span></div><p>每段对话拥有独立文件空间，<br />让每个点子都有自己的小花园。</p></div>
-          <div class="daily-note"><span>✺</span><p>好的代码，<br />从一个好奇的想法开始。</p><small>A FRESH START</small></div>
+          <div class="workspace-info"><div class="info-eyebrow"><span></span> 当前工作区</div><div><Icon name="folder" :size="15" /><span>{{ selectedId ? `会话 ${String(selectedId).slice(0, 8)}` : '尚未创建工作区' }}</span></div><p>当前会话的任务与文件独立保存。</p></div>
         </aside>
       </div>
     </main>
