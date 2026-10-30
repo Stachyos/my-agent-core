@@ -6,6 +6,8 @@ import DOMPurify from 'dompurify'
 import Icon from './components/Icon.vue'
 import { api, errorMessage } from './api'
 
+const mascotUrl = '/images/minty-catgirl.png'
+
 const md = new MarkdownIt({ html: false, linkify: true, breaks: true })
 const markdown = value => DOMPurify.sanitize(md.render(value || ''))
 const status = ref(null)
@@ -270,10 +272,10 @@ async function drawChart() {
   }
   const daily = stats.value.daily || []
   chart.setOption({
-    tooltip: { trigger: 'axis', backgroundColor: '#fff', borderColor: '#e7ede7', textStyle: { color: '#3d5249' } },
-    grid: { left: 40, right: 20, top: 28, bottom: 32 },
-    xAxis: { type: 'category', boundaryGap: false, data: daily.map(d => d.date?.slice(5)), axisLine: { lineStyle: { color: '#e7ede7' } }, axisTick: { show: false }, axisLabel: { color: '#97a49b', margin: 16 } },
-    yAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: '#eff2ed', type: 'dashed' } }, axisLabel: { color: '#97a49b' } },
+    tooltip: { trigger: 'axis', backgroundColor: '#fff', borderColor: '#e7ede7', textStyle: { color: '#314638', fontSize: 14, fontFamily: '"Inter", "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif' } },
+    grid: { left: 16, right: 22, top: 28, bottom: 20, containLabel: true },
+    xAxis: { type: 'category', boundaryGap: false, data: daily.map(d => d.date?.slice(5)), axisLine: { lineStyle: { color: '#e7ede7' } }, axisTick: { show: false }, axisLabel: { color: '#526557', fontSize: 14, margin: 16 } },
+    yAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: '#eff2ed', type: 'dashed' } }, axisLabel: { color: '#526557', fontSize: 14 } },
     series: [{ type: 'line', smooth: 0.4, symbolSize: 7, data: daily.map(d => d[chartMetric.value] || 0), itemStyle: { color: '#70a98a', borderWidth: 3, borderColor: '#fff' }, lineStyle: { width: 3, color: '#70a98a' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#d7ebdc' }, { offset: 1, color: '#f9fcf8' }]) } }],
   }, true)
 }
@@ -286,7 +288,7 @@ onBeforeUnmount(() => { destroyed = true; clearTimeout(pollTimer); chartObserver
     <div v-if="sidebarOpen" class="sidebar-scrim" @click="sidebarOpen = false"></div>
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <a class="brand" href="#" @click.prevent="newSession">
-        <div class="brand-mark"><Icon name="leaf" :size="26" /></div>
+        <div class="brand-mark"><img :src="mascotUrl" alt="薄荷猫娘" width="50" height="50" /></div>
         <div><strong>Minty Code<span class="brand-dot">.</span></strong><small>让灵感，慢慢发芽</small></div>
       </a>
       <button class="new-chat" @click="newSession"><Icon name="plus" :size="18" /><span>开启新的灵感</span><kbd>＋</kbd></button>
@@ -334,7 +336,7 @@ onBeforeUnmount(() => { destroyed = true; clearTimeout(pollTimer); chartObserver
           <div ref="chatScroller" class="chat-scroll">
             <div v-if="loadingSession" class="loading-state"><span class="loading-dot"></span>正在打开对话…</div>
             <div v-else-if="!messages.length && !active" class="welcome">
-              <div class="welcome-illustration" aria-hidden="true"><span class="orbit orbit-one">✳</span><span class="orbit orbit-two">+</span><span class="orbit orbit-three">·</span><div class="mascot-pot"><div class="mascot-leaves"><i></i><i></i><span></span></div><div class="mascot-face"><i></i><i></i><span></span><b></b><b></b></div></div><div class="mascot-shadow"></div><span class="hello-sticker">hello, creator!</span></div>
+              <div class="welcome-illustration"><img class="welcome-mascot" :src="mascotUrl" alt="薄荷猫娘，你的编程小搭档" width="180" height="180" fetchpriority="high" /></div>
               <div class="welcome-eyebrow">YOUR LITTLE CODING COMPANION</div>
               <h1>你好呀，今天想创造点什么<span>？</span></h1>
               <p>我是薄荷，你的编程小搭档。<br />从一个小点子开始，我们一起把它变成现实。</p>
@@ -343,8 +345,8 @@ onBeforeUnmount(() => { destroyed = true; clearTimeout(pollTimer); chartObserver
             </div>
             <div v-else class="message-list">
               <div class="conversation-start"><span></span>灵感从这里开始<span></span></div>
-              <article v-for="message in messages.filter(m => ['user','assistant'].includes(m.role))" :key="message.id" :class="['message', message.role]"><div :class="['message-avatar', message.role]"><Icon v-if="message.role === 'assistant'" name="leaf" :size="20" /><span v-else>我</span></div><div class="message-body"><div class="message-meta"><strong>{{ message.role === 'assistant' ? '薄荷' : '你' }}</strong><span>{{ formatTime(message.createdAt) }}</span><span v-if="message.role === 'assistant'" class="assistant-tag">MINTY</span></div><div v-if="message.role === 'assistant'" class="markdown-content" v-html="markdown(message.content)"></div><div v-else class="user-content">{{ message.content }}</div></div></article>
-              <article v-if="active" class="message assistant"><div class="message-avatar assistant"><Icon name="leaf" :size="20" /></div><div class="message-body"><div class="message-meta"><strong>薄荷</strong><span class="assistant-tag">MINTY</span><span class="thinking-label"><span class="loading-dot"></span>{{ run?.status === 'stopping' ? '正在收好手头的工作' : '正在认真处理' }}</span></div><div v-if="liveText" class="markdown-content" v-html="markdown(liveText)"></div><div v-else class="thinking-bubbles"><i></i><i></i><i></i></div></div></article>
+              <article v-for="message in messages.filter(m => ['user','assistant'].includes(m.role))" :key="message.id" :class="['message', message.role]"><div :class="['message-avatar', message.role]"><img v-if="message.role === 'assistant'" :src="mascotUrl" alt="" width="44" height="44" /><span v-else>我</span></div><div class="message-body"><div class="message-meta"><strong>{{ message.role === 'assistant' ? '薄荷' : '你' }}</strong><span>{{ formatTime(message.createdAt) }}</span><span v-if="message.role === 'assistant'" class="assistant-tag">MINTY</span></div><div v-if="message.role === 'assistant'" class="markdown-content" v-html="markdown(message.content)"></div><div v-else class="user-content">{{ message.content }}</div></div></article>
+              <article v-if="active" class="message assistant"><div class="message-avatar assistant"><img :src="mascotUrl" alt="" width="44" height="44" /></div><div class="message-body"><div class="message-meta"><strong>薄荷</strong><span class="assistant-tag">MINTY</span><span class="thinking-label"><span class="loading-dot"></span>{{ run?.status === 'stopping' ? '正在收好手头的工作' : '正在认真处理' }}</span></div><div v-if="liveText" class="markdown-content" v-html="markdown(liveText)"></div><div v-else class="thinking-bubbles"><i></i><i></i><i></i></div></div></article>
               <div v-if="toolEvents.length" class="execution-card"><div class="execution-heading"><Icon name="terminal" :size="16" /><strong>执行足迹</strong><span>{{ toolEvents.length }} 条记录</span><span v-if="active" class="live-badge">LIVE</span></div><div class="execution-items"><div v-for="event in toolEvents" :key="event.id" :class="['execution-item', { error: event.type === 'error' }]"><button @click="toggleEvent(event.id)"><Icon :name="event.type === 'error' ? 'close' : event.type === 'tool_start' ? 'terminal' : 'check'" :size="14" /><span>{{ eventTitle(event) }}</span><small>{{ formatTime(event.createdAt) }}</small><Icon name="chevron" :size="13" :class="{ rotated: openedEvents.has(event.id) }" /></button><pre v-if="openedEvents.has(event.id)">{{ eventDetails(event) }}</pre></div></div></div>
               <div v-if="run && !active" :class="['run-summary', normalizeState(run.status)]"><Icon :name="normalizeState(run.status) === 'failed' ? 'close' : 'check'" :size="14" /><span>{{ stateLabel(run.status) }}</span><span v-if="tokenCount">· {{ formatCount(tokenCount) }} tokens</span><span v-if="run.error" class="run-error">{{ run.error }}</span></div>
             </div>
@@ -371,7 +373,7 @@ onBeforeUnmount(() => { destroyed = true; clearTimeout(pollTimer); chartObserver
       </div>
     </main>
 
-    <el-dialog v-model="settingsOpen" title="设置与连接" width="540px" class="mint-dialog" align-center><div class="settings-intro"><div class="settings-sprout"><Icon name="leaf" :size="28" /></div><div><h3>让薄荷准备好出发</h3><p>模型密钥只保存在后端，不会发送到网页。</p></div></div><div class="settings-rows"><div><span>后端连接</span><strong :class="connected ? 'text-mint' : 'text-error'">{{ connected ? '连接正常' : '尚未连接' }}</strong></div><div><span>模型配置</span><strong>{{ status?.configured ? '已配置' : '尚未配置' }}</strong></div><div><span>当前模型</span><code>{{ status?.model || '—' }}</code></div><div><span>命令执行</span><strong>{{ status?.shellEnabled ? '已启用' : '已关闭（仅文件工具）' }}</strong></div><div><span>服务状态</span><strong>{{ statusLabel }}</strong></div></div><div class="settings-guide"><strong>首次使用</strong><ol><li>按项目 README 配置 PostgreSQL 与后端环境变量。</li><li>设置 <code>ANTHROPIC_API_KEY</code>、<code>MODEL_ID</code>；需要时设置兼容服务的地址。</li><li>启动后端，再点击下方按钮检查连接。</li></ol><p>为了保护密钥，配置需要在本机后端完成。此页面不会展示或保存 API Key。</p></div><template #footer><el-button @click="settingsOpen = false">稍后再说</el-button><el-button type="primary" :loading="initialLoading" @click="initialize">重新检查连接</el-button></template></el-dialog>
+    <el-dialog v-model="settingsOpen" title="设置与连接" width="540px" class="mint-dialog" align-center><div class="settings-intro"><div class="settings-mascot"><img :src="mascotUrl" alt="" width="64" height="64" /></div><div><h3>让薄荷准备好出发</h3><p>模型密钥只保存在后端，不会发送到网页。</p></div></div><div class="settings-rows"><div><span>后端连接</span><strong :class="connected ? 'text-mint' : 'text-error'">{{ connected ? '连接正常' : '尚未连接' }}</strong></div><div><span>模型配置</span><strong>{{ status?.configured ? '已配置' : '尚未配置' }}</strong></div><div><span>当前模型</span><code>{{ status?.model || '—' }}</code></div><div><span>命令执行</span><strong>{{ status?.shellEnabled ? '已启用' : '已关闭（仅文件工具）' }}</strong></div><div><span>服务状态</span><strong>{{ statusLabel }}</strong></div></div><div class="settings-guide"><strong>首次使用</strong><ol><li>按项目 README 配置 PostgreSQL 与后端环境变量。</li><li>设置 <code>ANTHROPIC_API_KEY</code>、<code>MODEL_ID</code>；需要时设置兼容服务的地址。</li><li>启动后端，再点击下方按钮检查连接。</li></ol><p>为了保护密钥，配置需要在本机后端完成。此页面不会展示或保存 API Key。</p></div><template #footer><el-button @click="settingsOpen = false">稍后再说</el-button><el-button type="primary" :loading="initialLoading" @click="initialize">重新检查连接</el-button></template></el-dialog>
     <el-dialog v-model="fileOpen" :title="openedFile.path" width="min(900px, 94vw)" class="mint-dialog file-dialog"><div v-if="fileLoading" class="loading-state">正在打开文件…</div><pre v-else class="file-preview">{{ openedFile.content }}</pre><template #footer><el-button @click="fileOpen = false">关闭</el-button><el-button :disabled="fileLoading" @click="downloadFile">下载文件</el-button><el-button type="primary" :disabled="fileLoading" @click="copyFile"><Icon name="copy" :size="14" />复制内容</el-button></template></el-dialog>
   </div>
 </template>
